@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arise - Study Cards</title>
+    
+    <!-- External Links -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen pb-24 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+    <nav class="bg-white dark:bg-slate-800 shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50 border-b border-transparent dark:border-slate-700 transition-colors duration-300">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="app.navigate('dashboard')">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">Arise</h1>
+        </div>
+        <div class="flex gap-2 sm:gap-3">
+            <button onclick="app.toggleTheme()" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors" title="Toggle Dark/Light Mode">
+                <i data-lucide="sun" id="theme-icon" class="w-6 h-6"></i>
+            </button>
+            <button onclick="app.navigate('add')" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors" title="Add Card">
+                <i data-lucide="plus" class="w-6 h-6"></i>
+            </button>
+            <button onclick="app.navigate('manage')" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors" title="Settings">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 sm:p-6" id="app-root">
+        
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="fade-in space-y-8">
+            <header>
+                <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Your Study Decks</h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Select a subject to start reviewing or practicing.</p>
+            </header>
+            
+            <div id="subjects-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Subjects will be rendered here -->
+            </div>
+        </div>
+
+        <!-- STUDY VIEW -->
+        <div id="view-study" class="view-hidden fade-in flex-col items-center max-w-lg mx-auto w-full h-[75vh]">
+            <div class="w-full flex items-center justify-between mb-6">
+                <!-- Back Button -->
+                <button onclick="app.exitStudy()" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex items-center gap-1 font-medium z-20 relative">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i> Back
+                </button>
+                <div class="flex-1 mx-4">
+                    <div class="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div id="study-progress-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="study-progress-text" class="text-xs text-center mt-1 text-slate-500 dark:text-slate-400 font-medium">
+                        0 / 0 cards
+                    </div>
+                </div>
+                <!-- Shuffle Button -->
+                <div class="w-16 flex justify-end">
+                    <button onclick="app.shuffleRemaining()" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex items-center justify-center font-medium z-20 relative" title="Shuffle Remaining Cards">
+                        <i data-lucide="shuffle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative w-full flex-1 flex flex-col items-center justify-center perspective-1000">
+                <!-- Card Element -->
+                <div id="flashcard" class="swipe-card relative w-full max-w-sm aspect-[3/4] preserve-3d cursor-pointer mb-6">
+                    
+                    <!-- FRONT (Question) -->
+                    <div class="flip-front backface-hidden" id="card-front">
+                        <div class="absolute top-4 right-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Question</div>
+                        <h3 id="card-question" class="text-2xl font-bold text-center text-slate-800 dark:text-white leading-snug select-none"></h3>
+                        <div class="absolute bottom-6 text-slate-400 dark:text-slate-500 text-sm flex items-center animate-pulse select-none">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i> Double-tap to flip
+                        </div>
+                    </div>
+
+                    <!-- BACK (Answer) -->
+                    <div class="flip-back backface-hidden" id="card-back">
+                        <div class="absolute top-4 right-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Answer</div>
+                        
+                        <div class="w-full h-full flex flex-col justify-center overflow-y-auto overflow-x-hidden break-words custom-scrollbar pt-10 pb-8 px-2">
+                            <div id="card-answer" class="text-xl font-bold text-slate-800 dark:text-white text-center mb-4 leading-relaxed select-none w-full max-w-full"></div>
+                            
+                            <!-- Hidden by default, shown via Swipe Up -->
+                            <div id="card-exp-container" class="hidden w-full flex-col items-center max-w-full">
+                                <div class="w-full h-[1px] bg-slate-200 dark:bg-slate-600 my-4 flex-shrink-0"></div>
+                                <div id="card-explanation" class="text-sm text-slate-600 dark:text-slate-300 text-center leading-relaxed italic select-none px-2 w-full max-w-full"></div>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-6 text-slate-400 dark:text-slate-500 text-xs flex flex-col items-center select-none bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur text-center">
+                            <span>Swipe Left (Right) | Swipe Right (Wrong)</span>
+                            <span class="font-bold text-blue-500 mt-1" id="swipe-up-hint">Swipe UP for Explanation</span>
+                        </div>
+                    </div>
+
+                    <!-- Swipe Overlays -->
+                    <div id="overlay-right" class="swipe-overlay bg-red-500/30 text-red-600 dark:text-red-400">
+                        <i data-lucide="x-circle" class="w-16 h-16"></i>
+                    </div>
+                    <div id="overlay-left" class="swipe-overlay bg-green-500/30 text-green-600 dark:text-green-400">
+                        <i data-lucide="check-circle" class="w-16 h-16"></i>
+                    </div>
+                </div>
+
+                <!-- NEW: Flashcard Action Buttons (Flip, Left, Right) -->
+                <div class="flex justify-center items-center gap-6 mt-2 z-20 relative">
+                    <button onclick="app.handleSwipeResult('left')" class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all shadow-sm bg-white dark:bg-slate-800 active:scale-95" title="Correct">
+                        <i data-lucide="square" class="w-6 h-6"></i>
+                    </button>
+                    
+                    <button onclick="app.flipCard()" class="p-4 rounded-full border-2 border-slate-200 dark:border-slate-700 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all shadow-sm bg-white dark:bg-slate-800 active:scale-95" title="Flip Card">
+                        <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                    </button>
+
+                    <button onclick="app.handleSwipeResult('right')" class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all shadow-sm bg-white dark:bg-slate-800 active:scale-95" title="Wrong">
+                        <i data-lucide="square" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Kept original legend as requested, just spaced lower -->
+            <div class="w-full flex justify-between mt-6 px-4 text-sm font-medium">
+                <div class="flex flex-col items-center text-green-500 dark:text-green-400 opacity-60">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                    <span>Correct (Left)</span>
+                </div>
+                <div class="flex flex-col items-center text-red-500 dark:text-red-400 opacity-60">
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                    <span>Wrong (Right)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD CARD VIEW -->
+        <div id="view-add" class="view-hidden fade-in max-w-xl mx-auto">
+            <button onclick="app.navigate('dashboard')" class="flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white mb-6 transition-colors">
+                <i data-lucide="chevron-left" class="w-5 h-5 mr-1"></i> Back
+            </button>
+            
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <h2 class="text-2xl font-bold mb-6 text-slate-800 dark:text-white">Add New Card</h2>
+                
+                <div id="add-no-subject-warning" class="hidden p-4 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg flex items-start gap-3 mb-6">
+                    <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                    <p>You need to create a subject first before adding cards. Go to Settings to add a subject.</p>
+                </div>
+
+                <form id="add-card-form" onsubmit="app.addCard(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
+                        <select id="add-subject-id" required class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question</label>
+                        <textarea id="add-question" required placeholder="e.g., What is the powerhouse of the cell?" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all min-h-[80px]"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Answer</label>
+                        <textarea id="add-answer" required placeholder="e.g., Mitochondria" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all min-h-[80px]"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Explanation (Optional)</label>
+                        <textarea id="add-explanation" placeholder="Add extra context that appears below the answer..." class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all min-h-[80px]"></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all active:scale-[0.98]">
+                        Save Card
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MANAGE VIEW -->
+        <div id="view-manage" class="view-hidden fade-in max-w-2xl mx-auto space-y-8">
+            <button onclick="app.navigate('dashboard')" class="flex items-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                <i data-lucide="chevron-left" class="w-5 h-5 mr-1"></i> Back to Dashboard
+            </button>
+
+            <!-- Manage Subjects -->
+            <section class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 class="text-xl font-bold mb-4 flex items-center dark:text-white"><i data-lucide="book-open" class="w-5 h-5 mr-2 text-blue-500"></i> Manage Subjects</h3>
+                
+                <form onsubmit="app.addSubject(event)" class="flex gap-2 mb-6">
+                    <input type="text" id="new-subject-name" placeholder="New Subject Name" required class="flex-1 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                    <button type="submit" class="px-6 py-3 bg-slate-800 dark:bg-blue-600 text-white font-medium rounded-xl hover:bg-slate-900 dark:hover:bg-blue-700 transition-colors">Add</button>
+                </form>
+
+                <div id="manage-subjects-list" class="space-y-2">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- Import/Export -->
+            <section class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 class="text-xl font-bold mb-4 flex items-center dark:text-white"><i data-lucide="upload" class="w-5 h-5 mr-2 text-green-500"></i> Import / Export Data</h3>
+                
+                <div class="text-sm text-slate-700 dark:text-slate-300 mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                    <p><strong>Note on Imports:</strong> Importing a JSON file will <em>add</em> new questions to existing ones. A backup is auto-created.</p>
+                    <p class="mt-2 text-xs font-mono break-all">Format: [{"question": "Q", "answer": "A", "explanation": "Exp", "subjectName": "Math"}]</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div onclick="document.getElementById('file-upload').click()" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors group">
+                        <i data-lucide="upload" class="w-8 h-8 text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 mb-2 transition-colors"></i>
+                        <span class="font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-700 dark:group-hover:text-blue-400">Import JSON File</span>
+                        <input type="file" id="file-upload" accept=".json" class="hidden" onchange="app.importData(event)" />
+                    </div>
+
+                    <div onclick="app.downloadBackup()" class="border-2 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+                        <i data-lucide="download" class="w-8 h-8 text-slate-500 dark:text-slate-400 mb-2"></i>
+                        <span class="font-medium text-slate-700 dark:text-slate-300">Download Backup (.json)</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="px-6 py-3 rounded-full shadow-lg text-white font-medium bg-slate-800 dark:bg-slate-700">
+        <span id="notification-msg"></span>
+    </div>
+
+    <!-- External Script -->
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.preserve-3d {
+    transform-style: preserve-3d;
+}
+
+.backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.flip-front, .flip-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    overflow: hidden;
+}
+
+.flip-front, .flip-back {
+    background: white;
+    border: 1px solid #e2e8f0;
+}
+
+.dark .flip-front, .dark .flip-back {
+    background: #1e293b;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.flip-back {
+    transform: rotateY(180deg);
+}
+
+.is-flipped .flip-front {
+    transform: rotateY(-180deg);
+}
+
+.is-flipped .flip-back {
+    transform: rotateY(0deg);
+}
+
+.swipe-card {
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    cursor: grab;
+    touch-action: none; /* Prevent browser scrolling while dragging */
+}
+
+.swipe-card:active {
+    cursor: grabbing;
+}
+
+.swipe-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.5rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; 
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; 
+    border-radius: 10px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #475569; 
+}
+
+.view-hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#notification-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+#notification-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
