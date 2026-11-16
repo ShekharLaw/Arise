@@ -1,9 +1,9 @@
 {
-  "name": "The System",
-  "short_name": "The System",
+  "name": "Arise",
+  "short_name": "Arise",
   "description": "Solo Leveling style daily quest tracker.",
   "id": "./",
-  "start_url": "./",
+  "start_url": "https://shekharlaw.github.io/Arise/",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
