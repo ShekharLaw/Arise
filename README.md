@@ -38,14 +38,6 @@ python3 -m http.server 8080
 
 Then open http://localhost:8080.
 
-## Deploy on GitHub Pages
-
-1. Create a repository and upload all files, keeping the folder structure.
-2. Open **Settings > Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**, select `main` and `/ (root)`, then save.
-4. After a minute your app is live at `https://<your-name>.github.io/<repo>/`.
-
-All paths in the project are relative, so it works from a sub folder.
 
 ## Install as an app
 
